@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block title %}{% if user.is_admin %}All Orders{% else %}My Orders{% endif %}{% endblock %}
+{% block content %}
+<table>
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        {% if user.is_admin %}<th>Username</th>{% endif %}
+        <th>Goods</th>
+        <th>Total</th>
+        <th>Status</th>
+        {% if user.is_admin %}<th>Action</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in orders %}
+      <tr>
+        <td>{{ e.order.id }}</td>
+        {% if user.is_admin %}
+          <td>{{ e.username }}</td>
+        {% endif %}
+        <td>{{ e.goods_text if e.goods_text else '-' }}</td>
+        <td>{{ e.total }}$</td>
+        <td>{{ 'Active' if e.order.is_active else 'Completed' }}</td>
+        {% if user.is_admin %}
+        <td>
+          {% if e.order.is_active %}
+          <form method="POST" action="/orders/complete">
+            <input name="id" value="{{ e.order.id }}" style="display: none;">
+            <button class="btn">Mark Done</button>
+          </form>
+          {% endif %}
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endblock %}

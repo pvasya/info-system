@@ -1,0 +1,114 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: online_store
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: kvayb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database_schema.sql:/docker-entrypoint-initdb.d/database_schema.sql:ro
+    networks:
+      - monitoring
+
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8000
+      DB_NAME: online_store
+      DB_USER: postgres
+      DB_PASSWORD: kvayb
+      DB_HOST: postgres
+      DB_PORT: 5432
+    depends_on:
+      - postgres
+    ports:
+      - "8000:8000"
+    networks:
+      - monitoring
+
+  data-generator:
+    build: .
+    restart: unless-stopped
+    environment:
+      DB_NAME: online_store
+      DB_USER: postgres
+      DB_PASSWORD: kvayb
+      DB_HOST: postgres
+      DB_PORT: 5432
+      GENERATOR_INTERVAL: 20
+    command: ["python", "scripts/data_generator.py"]
+    depends_on:
+      - postgres
+    networks:
+      - monitoring
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: postgres://postgres:kvayb@postgres:5432/online_store?sslmode=disable
+    depends_on:
+      - postgres
+    networks:
+      - monitoring
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/blackbox_exporter/config.yml"
+    volumes:
+      - ./monitoring/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    depends_on:
+      - app
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - postgres-exporter
+      - blackbox-exporter
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  prometheus_data:
+  grafana_data:

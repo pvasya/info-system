@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Online Shop{% endblock %}</title>
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <h1 class="logo">
+                <a href="/" class="logo-link">Online Shop</a>
+            </h1>
+            <nav class="main-nav">
+                {% if user %}
+                    <span class="welcome-msg">Welcome, <strong>{{ user.username }}</strong></span>
+                    <a href="/" class="nav-link">Catalog</a>
+                    <a href="/profile" class="nav-link">Profile</a>
+                    {% if user.is_admin %}
+                        <a href="/orders" class="nav-link">All Orders</a>
+                        <a href="/blacklist" class="nav-link">Blacklist</a>
+                    {% else %}
+                        <a href="/orders" class="nav-link">My Orders</a>
+                        <a href="/basket" class="nav-link">Basket</a>
+                    {% endif %}
+                    <a href="/logout" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="/" class="nav-link">Catalog</a>
+                    <a href="/login" class="nav-link">Login</a>
+                    <a href="/register" class="nav-link">Register</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="./../static/js/catalog.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<h2>Register</h2>
+{% if errors %}
+	<div class="error">
+		<ul>
+		{% for error in errors %}
+			<li>{{ error }}</li>
+		{% endfor %}
+		</ul>
+	</div>
+{% endif %}
+<form method="POST" action="/register" class="auth-form">
+	<label>Username:
+		<input type="text" name="username" value="{{ form_data.username if form_data else '' }}" required autofocus>
+	</label>
+	<label>Password:
+		<input type="password" name="password" required>
+	</label>
+	<label>Email:
+		<input type="email" name="email" value="{{ form_data.email if form_data else '' }}" required>
+	</label>
+	<label>Full Name:
+		<input type="text" name="name" value="{{ form_data.name if form_data else '' }}" required>
+	</label>
+	<label>Address:
+		<input type="text" name="address" value="{{ form_data.address if form_data else '' }}" required>
+	</label>
+	<div class="form-actions">
+		<button type="submit" class="btn-primary">Register</button>
+		<span class="form-link">Already have an account? <a href="/login">Login here</a></span>
+	</div>
+</form>
+{% endblock %}

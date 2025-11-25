@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<h2>Login</h2>
+{% if error %}
+	<p class="error">{{ error }}</p>
+{% endif %}
+<form method="POST" action="/login" class="auth-form">
+	<label>Username:
+		<input type="text" name="username" required autofocus>
+	</label>
+	<label>Password:
+		<input type="password" name="password" required>
+	</label>
+	<div class="form-actions">
+		<button type="submit" class="btn-primary">Login</button>
+		<span class="form-link">Don't have an account? <a href="/register">Register here</a></span>
+	</div>
+</form>
+{% endblock %}

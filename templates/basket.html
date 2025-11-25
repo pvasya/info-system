@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block title %}Basket{% endblock %}
+{% block content %}
+	<div class="basket-header">
+		<h2>Your Basket</h2>
+		{% if items %}
+		<div class="basket-summary">
+			<p><strong>Total: {{ total }}$</strong></p>
+			<form method="POST" action="/orders/create">
+				<button class="btn">Place Order</button>
+			</form>
+		</div>
+		{% endif %}
+	</div>
+
+	{% if items %}
+		<div class="catalog">
+			{% for entry in items %}
+			<div class="product user">
+				<img src="{{ entry.goods.image_url }}" alt="{{ entry.goods.name }}">
+				<div class="details">
+					<h3>{{ entry.goods.name }}</h3>
+					<p class="price">{{ entry.goods.price }}$ × {{ entry.quantity }}</p>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	{% else %}
+		<p>Your basket is empty. <a href="/">Go to catalog</a></p>
+	{% endif %}
+{% endblock %}

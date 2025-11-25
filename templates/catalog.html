@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+{% block title %}Catalog{% endblock %}
+{% block content %}
+<h2>Catalog</h2>
+<div class="catalog">
+	{% for g in goods %}
+	<div class="product {% if user and user.is_admin %}admin{% elif user %}user{% endif %}" data-id="{{ g.id }}">
+		<img src="{{ g.image_url }}" alt="{{ g.name }}">
+		<div class="details">
+			<h3>{{ g.name }}</h3>
+			{% if g.description %}
+			<p class="description">{{ g.description }}</p>
+			{% endif %}
+			<p class="price">{{ g.price }}$</p>
+
+			{% if user and not user.is_admin %}
+			<div class="rating">
+				<div class="stars" data-goods-id="{{ g.id }}">
+					{% set rating_info = goods_ratings.get(g.id, {}) %}
+					{% for i in range(1, 6) %}
+					<span class="star {% if i <= rating_info.user_rating %}filled{% endif %}" data-rating="{{ i }}">★</span>
+					{% endfor %}
+				</div>
+				<span class="rating-text">
+					{{ rating_info.average_rating }}/5 ({{ rating_info.rating_count }} reviews)
+				</span>
+			</div>
+			{% endif %}
+		</div>
+
+		{% if user and not user.is_admin %}
+		<div class="actions">
+			<form class="form-remove" method="POST" action="/basket/remove" style="display:none">
+				<input name="id" value="{{ g.id }}">
+			</form>
+			<form class="form-add"		method="POST" action="/basket/add" style="display:none">
+				<input name="id" value="{{ g.id }}">
+			</form>
+
+
+			{% set cnt = basket_counts.get(g.id, 0) %}
+			<button class="minus btn" {% if cnt == 0 %}disabled{% endif %}>−</button>
+			<span class="counter" data-count="{{ cnt }}">{{ cnt }}</span>
+			<button class="plus btn">+</button>
+		</div>
+		{% endif %}
+
+		{% if user and user.is_admin %}
+		<div class="actions">
+			<button class="btn edit" data-product-id="{{ g.id }}">Update</button>
+			<button class="btn delete"
+				onclick="if(confirm('Delete this item?')) document.getElementById('del-{{ g.id }}').submit();">
+				Delete
+			</button>
+			<form id="del-{{ g.id }}" method="POST" action="/goods/delete" style="display:none">
+				<input name="id" value="{{ g.id }}">
+			</form>
+			
+			<div class="edit-form" id="edit-form-{{ g.id }}" style="display: none;">
+				<form method="POST" action="/goods/update" class="edit-details">
+					<input type="hidden" name="id" value="{{ g.id }}">
+					<input type="text" name="name" value="{{ g.name }}" required>
+					<input type="text" name="url" value="{{ g.image_url }}" required>
+					<input type="number" name="price" value="{{ g.price }}" step="0.01" min="0.01" pattern="^\d+(\.\d{1,2})?$" required>
+					<input type="text" name="description" value="{{ g.description or '' }}" maxlength="50">
+					<div class="form-actions">
+						<button type="submit" class="btn update">Update</button>
+						<button type="button" class="btn cancel" data-product-id="{{ g.id }}">Cancel</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		{% endif %}
+
+	</div>
+	{% endfor %}
+
+	{% if user and user.is_admin %}
+    <div class="product admin add-new">
+        <form method="POST" action="/goods/add" class="details">
+            <input type="text" name="name" placeholder="Name" required>
+            <input type="text" name="url" placeholder="Image URL" required>
+            <input type="number" name="price" placeholder="Price" step="0.01" min="0.01" pattern="^\d+(\.\d{1,2})?$" required>
+            <input type="text" name="description" placeholder="Description" maxlength="50">
+            <button class="btn">Add</button>
+        </form>
+    </div>
+	{% endif %}
+</div>
+{% endblock %}
